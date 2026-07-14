@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Study Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Glassmorphism details */
+        .glass-card {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* 3D Flashcard Flipping Setup */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .card-flipped {
+            transform: rotateY(180deg);
+        }
+        
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+    
+    <script>
+        // Tailwind dark/light configuration
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-all duration-300">
+
+    <header class="sticky top-0 z-40 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-emerald-500 to-teal-600 text-white p-2.5 rounded-xl shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
+                        EduDeck
+                    </h1>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Smart Q&A Board</p>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors" title="Toggle Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+                
+                <!-- Start Flashcard Session Button -->
+                <button id="startQuizBtn" class="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2.5 rounded-xl font-semibold shadow-md shadow-emerald-500/10 hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-sm">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Study Cards</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Statistics Section -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 dark:text-emerald-400 rounded-xl">
+                    <i class="fa-solid fa-layer-group text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Deck Size</div>
+                    <div id="statTotal" class="text-xl font-bold">0</div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-sky-50 dark:bg-sky-950/30 text-sky-500 dark:text-sky-400 rounded-xl">
+                    <i class="fa-solid fa-tags text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Categories</div>
+                    <div id="statCategories" class="text-xl font-bold">0</div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-amber-50 dark:bg-amber-950/30 text-amber-500 dark:text-amber-400 rounded-xl">
+                    <i class="fa-solid fa-star text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Starred Items</div>
+                    <div id="statStarred" class="text-xl font-bold">0</div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-500 dark:text-indigo-400 rounded-xl">
+                    <i class="fa-solid fa-percentage text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Mastery Rate</div>
+                    <div id="statMastery" class="text-xl font-bold">0%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Quick Addition Form -->
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-plus-circle text-emerald-500"></i>
+                            <span>Create New Flashcard</span>
+                        </h2>
+                        <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded font-medium">Manual</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label for="manualSno" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">S.No.</label>
+                                <input type="text" id="manualSno" placeholder="Auto" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-center">
+                            </div>
+                            <div class="col-span-2">
+                                <label for="manualCategory" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Category</label>
+                                <input type="text" id="manualCategory" placeholder="e.g. JavaScript, Physics" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="manualQuestion" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Question / Front Text</label>
+                            <input type="text" id="manualQuestion" placeholder="What is an API?" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label for="manualAnswer" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Answer / Back Text</label>
+                            <textarea id="manualAnswer" placeholder="Application Programming Interface..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all h-20 resize-none"></textarea>
+                        </div>
+
+                        <button id="addManualBtn" class="w-full bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white font-semibold py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Add Card</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-700">
+                        <h2 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv text-blue-500"></i>
+                            <span>CSV Data Port</span>
+                        </h2>
+                        <span class="text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-blue-300 px-2 py-0.5 rounded font-medium">Bulk Upload</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="csvDump" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Paste CSV formatted text</label>
+                            <textarea id="csvDump" placeholder='1, "What is CSS?", "Cascading Style Sheets", "Web Dev"&#10;2, "What is HTML?", "Hypertext Markup Language", "Web Dev"' class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all h-28 font-mono text-xs"></textarea>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-info text-[9px]"></i>
+                                <span>Format: SNo, "Question", "Answer", "[Category]" (Optional)</span>
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="importCsvBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm text-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-import"></i>
+                                <span>Import Data</span>
+                            </button>
+                            <button id="exportCsvBtn" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm text-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-export"></i>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup & Reset Utilities -->
+                <div class="flex items-center justify-between px-2">
+                    <button id="clearAllBtn" class="text-xs text-rose-500 hover:text-rose-600 font-medium flex items-center gap-1.5 transition-colors">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Clear All Cards</span>
+                    </button>
+                    <button id="loadSamplesBtn" class="text-xs text-emerald-500 hover:text-emerald-600 font-medium flex items-center gap-1.5 transition-colors">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <span>Load Sample Board</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Search & Filters Header -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-3 items-center">
+                        <!-- Search Bar -->
+                        <div class="relative w-full">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="searchInput" placeholder="Search questions & answers..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                        </div>
+                        
+                        <!-- Sort & Filter Selector -->
+                        <div class="flex w-full sm:w-auto items-center gap-2 shrink-0">
+                            <select id="sortSelector" class="w-full sm:w-auto bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                                <option value="sno-asc">SNo (Lowest First)</option>
+                                <option value="sno-desc">SNo (Highest First)</option>
+                                <option value="alpha">Alphabetical (A-Z)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Category Pills List -->
+                    <div class="flex flex-wrap gap-1.5 items-center" id="categoryPillContainer">
+                        <span class="text-xs text-slate-400 dark:text-slate-500 font-semibold mr-1">Categories:</span>
+                        <!-- Injected dynamic category pills -->
+                    </div>
+                </div>
+
+                <!-- Q&A Render Container -->
+                <div class="space-y-3" id="qaContainer">
+                    <!-- Loaded dynamic cards will appear here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="flashcardModal" class="fixed inset-0 z-50 hidden bg-slate-900/90 backdrop-blur-md flex flex-col justify-between items-center p-4 sm:p-6 transition-all duration-300">
+        
+        <!-- Modal Top Bar -->
+        <div class="w-full max-w-2xl flex items-center justify-between text-white py-3">
+            <div class="flex items-center gap-2">
+                <span class="bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded text-xs">STUDY MODE</span>
+                <span id="quizCounter" class="text-sm font-semibold tracking-wide text-slate-300">1 / 10</span>
+            </div>
+            <button id="closeQuizBtn" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div class="w-full max-w-lg flex flex-col items-center py-6 sm:py-12">
+            <!-- Perspective container -->
+            <div class="w-full h-80 sm:h-96 perspective-1000 cursor-pointer" id="quizCardTrigger">
+                <!-- Inner flippable card wrapper -->
+                <div id="quizCardInner" class="w-full h-full transform-style-3d relative rounded-3xl transition-transform duration-500 ease-out shadow-2xl">
+                    
+                    <!-- Front of card -->
+                    <div class="absolute inset-0 w-full h-full backface-hidden bg-white dark:bg-slate-800 border-2 border-emerald-500/20 rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase" id="quizCardCategoryFront">Category</span>
+                            <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded font-medium" id="quizCardSnoFront">#1</span>
+                        </div>
+                        <div class="my-auto py-4 text-center">
+                            <h3 id="quizCardQuestion" class="text-xl sm:text-2xl font-bold leading-relaxed text-slate-800 dark:text-white select-none">
+                                What is HTML?
+                            </h3>
+                        </div>
+                        <div class="text-center text-xs text-slate-400 dark:text-slate-500 font-medium">
+                            <i class="fa-solid fa-rotate mr-1.5 animate-pulse"></i> Click to flip and view the answer
+                        </div>
+                    </div>
+
+                    <!-- Back of card -->
+                    <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-slate-900 to-slate-950 dark:from-slate-850 dark:to-slate-900 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between text-white">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-emerald-400 tracking-wider uppercase" id="quizCardCategoryBack">Category</span>
+                            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded font-medium" id="quizCardSnoBack">#1</span>
+                        </div>
+                        <div class="my-auto py-4 text-center overflow-y-auto max-h-56">
+                            <p id="quizCardAnswer" class="text-base sm:text-lg leading-relaxed font-medium text-slate-100 select-none">
+                                HyperText Markup Language. It forms the structure of web pages.
+                            </p>
+                        </div>
+                        <div class="text-center text-xs text-emerald-400/70 font-medium">
+                            <i class="fa-solid fa-rotate mr-1.5"></i> Click again to flip back
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-2xl bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-700 flex flex-col gap-4 text-white">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span class="text-sm text-slate-400 font-medium text-center sm:text-left">Did you know this answer?</span>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <!-- Fail/Needs Practice btn -->
+                    <button id="needsPracticeBtn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Needs Practice</span>
+                    </button>
+                    <!-- Success/Got it btn -->
+                    <button id="gotItBtn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-5 py-2.5 rounded-xl font-extrabold text-sm transition-all shadow-md active:scale-95">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Mastered!</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats/Progress within session -->
+            <div class="grid grid-cols-2 gap-4 pt-3 border-t border-slate-700 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Mastered:</span>
+                    <span id="sessionMasteredCount" class="font-bold text-emerald-400">0</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Needs Work:</span>
+                    <span id="sessionNeedsWorkCount" class="font-bold text-rose-400">0</span>
+                </div>
+            </div>
+
+            <!-- Navigation slide keys bar -->
+            <div class="flex justify-between items-center text-slate-400 text-xs pt-1">
+                <button id="prevCardBtn" class="hover:text-white flex items-center gap-1.5 transition-colors py-1 px-3 bg-slate-700/50 rounded-lg">
+                    <i class="fa-solid fa-arrow-left"></i> Previous
+                </button>
+                <span class="text-slate-500">Press Left/Right Arrows or Space to play</span>
+                <button id="nextCardBtn" class="hover:text-white flex items-center gap-1.5 transition-colors py-1 px-3 bg-slate-700/50 rounded-lg">
+                    Next <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-md w-full"></div>
+
+    <div id="customModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-slate-100 dark:border-slate-700 shadow-xl space-y-4">
+            <div class="flex items-center gap-3 text-rose-500">
+                <i id="customModalIcon" class="fa-solid fa-circle-exclamation text-2xl"></i>
+                <h3 id="customModalTitle" class="text-lg font-bold text-slate-800 dark:text-white">Confirm Action</h3>
+            </div>
+            <p id="customModalMessage" class="text-sm text-slate-500 dark:text-slate-400">Are you sure you want to perform this action? This operation cannot be undone.</p>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button id="customModalCancel" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold transition-all">Cancel</button>
+                <button id="customModalConfirm" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editCardModal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 border border-slate-100 dark:border-slate-700 shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-emerald-500"></i>
+                    <span>Edit Card Details</span>
+                </h3>
+                <button id="closeEditModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <input type="hidden" id="editCardIndex">
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">S.No.</label>
+                        <input type="text" id="editSno" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-center">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Category</label>
+                        <input type="text" id="editCategory" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Question</label>
+                    <input type="text" id="editQuestion" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Answer</label>
+                    <textarea id="editAnswer" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-24 resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button id="editModalCancel" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold transition-all">Cancel</button>
+                <button id="editModalSave" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // State storage to hold Q&As loaded
+        let questionsDatabase = [];
+        let filteredCategory = 'all';
+        let currentQuizIndex = 0;
+        let quizSessionList = [];
+        let customModalResolve = null;
+
+        // Sample initial databases to prevent empty states
+        const sampleQuestions = [
+            { sno: "1", question: "What does HTML stand for?", answer: "HyperText Markup Language. It provides the core skeleton structure of any standard website layout structure.", category: "HTML", starred: false, status: "new" },
+            { sno: "2", question: "What is Cascading Style Sheets (CSS)?", answer: "CSS describes how HTML elements are to be displayed on screen, paper, or in other media.", category: "CSS", starred: true, status: "new" },
+            { sno: "3", question: "Explain JavaScript closures briefly", answer: "A closure is the combination of a function bundled together with references to its surrounding state (the lexical environment). closures allow an inner function to access scope from an outer function.", category: "JavaScript", starred: false, status: "needs-practice" },
+            { sno: "4", question: "What is the viewport meta tag for?", answer: "It gives the browser instructions on how to control the page's dimensions and scaling on varying viewports (highly critical for mobile layouts).", category: "HTML", starred: false, status: "mastered" },
+            { sno: "5", question: "Difference between '==' and '===' in JS?", answer: "== checks values for equality after performing type conversion. === checks values and types without coercion.", category: "JavaScript", starred: true, status: "mastered" }
+        ];
+
+        // DOM elements
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const csvDumpInput = document.getElementById('csvDump');
+        const importCsvBtn = document.getElementById('importCsvBtn');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        
+        const manualSnoInput = document.getElementById('manualSno');
+        const manualCategoryInput = document.getElementById('manualCategory');
+        const manualQuestionInput = document.getElementById('manualQuestion');
+        const manualAnswerInput = document.getElementById('manualAnswer');
+        const addManualBtn = document.getElementById('addManualBtn');
+        
+        const searchInput = document.getElementById('searchInput');
+        const sortSelector = document.getElementById('sortSelector');
+        const categoryPillContainer = document.getElementById('categoryPillContainer');
+        const qaContainer = document.getElementById('qaContainer');
+        
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const loadSamplesBtn = document.getElementById('loadSamplesBtn');
+
+        // Modal elements
+        const flashcardModal = document.getElementById('flashcardModal');
+        const closeQuizBtn = document.getElementById('closeQuizBtn');
+        const quizCardTrigger = document.getElementById('quizCardTrigger');
+        const quizCardInner = document.getElementById('quizCardInner');
+        const quizCardQuestion = document.getElementById('quizCardQuestion');
+        const quizCardAnswer = document.getElementById('quizCardAnswer');
+        const quizCardCategoryFront = document.getElementById('quizCardCategoryFront');
+        const quizCardCategoryBack = document.getElementById('quizCardCategoryBack');
+        const quizCardSnoFront = document.getElementById('quizCardSnoFront');
+        const quizCardSnoBack = document.getElementById('quizCardSnoBack');
+        const quizCounter = document.getElementById('quizCounter');
+        
+        const needsPracticeBtn = document.getElementById('needsPracticeBtn');
+        const gotItBtn = document.getElementById('gotItBtn');
+        const prevCardBtn = document.getElementById('prevCardBtn');
+        const nextCardBtn = document.getElementById('nextCardBtn');
+        const sessionMasteredCount = document.getElementById('sessionMasteredCount');
+        const sessionNeedsWorkCount = document.getElementById('sessionNeedsWorkCount');
+        
+        // Custom confirmation dialog DOM references
+        const customModal = document.getElementById('customModal');
+        const customModalTitle = document.getElementById('customModalTitle');
+        const customModalMessage = document.getElementById('customModalMessage');
+        const customModalCancel = document.getElementById('customModalCancel');
+        const customModalConfirm = document.getElementById('customModalConfirm');
+        
+        // Custom edit overlay DOM references
+        const editCardModal = document.getElementById('editCardModal');
+        const editCardIndex = document.getElementById('editCardIndex');
+        const editSno = document.getElementById('editSno');
+        const editCategory = document.getElementById('editCategory');
+        const editQuestion = document.getElementById('editQuestion');
+        const editAnswer = document.getElementById('editAnswer');
+        const editModalCancel = document.getElementById('editModalCancel');
+        const editModalSave = document.getElementById('editModalSave');
+        const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+
+        function initTheme() {
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeIcon.className = "fa-solid fa-sun text-lg";
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.className = "fa-solid fa-moon text-lg";
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+                themeIcon.className = "fa-solid fa-moon text-lg";
+                showToast("Switched to Light Theme", "info");
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+                themeIcon.className = "fa-solid fa-sun text-lg";
+                showToast("Switched to Dark Theme", "info");
+            }
+        });
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-lg border text-white transform transition-all duration-300 translate-y-2 opacity-0 flex items-center gap-3 glass-card pointer-events-auto`;
+            
+            let icon = `<i class="fa-solid fa-circle-check text-emerald-400"></i>`;
+            if (type === 'error') {
+                toast.className += ' bg-rose-950/90 border-rose-800 text-rose-100';
+                icon = `<i class="fa-solid fa-circle-exclamation text-rose-400"></i>`;
+            } else if (type === 'info') {
+                toast.className += ' bg-slate-900/90 border-slate-700 text-slate-100';
+                icon = `<i class="fa-solid fa-circle-info text-sky-400"></i>`;
+            } else {
+                toast.className += ' bg-emerald-950/90 border-emerald-800 text-emerald-100';
+            }
+
+            toast.innerHTML = `
+                ${icon}
+                <span class="text-xs font-semibold flex-grow">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white transition-colors ml-4"><i class="fa-solid fa-xmark text-sm"></i></button>
+            `;
+
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Self-dismiss mechanism
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        function confirmAction(title, message) {
+            customModalTitle.textContent = title;
+            customModalMessage.textContent = message;
+            customModal.classList.remove('hidden');
+            
+            return new Promise((resolve) => {
+                customModalResolve = resolve;
+            });
+        }
+
+        customModalConfirm.addEventListener('click', () => {
+            if (customModalResolve) customModalResolve(true);
+            customModal.classList.add('hidden');
+        });
+
+        customModalCancel.addEventListener('click', () => {
+            if (customModalResolve) customModalResolve(false);
+            customModal.classList.add('hidden');
+        });
+
+        function getNextSerialNumber() {
+            if (questionsDatabase.length === 0) return 1;
+            const numbers = questionsDatabase.map(q => parseInt(q.sno)).filter(n => !isNaN(n));
+            return numbers.length > 0 ? Math.max(...numbers) + 1 : questionsDatabase.length + 1;
+        }
+
+        function updateDashboardStats() {
+            const total = questionsDatabase.length;
+            const categoriesSet = new Set(questionsDatabase.map(q => q.category ? q.category.trim() : 'General'));
+            const starred = questionsDatabase.filter(q => q.starred).length;
+            const mastered = questionsDatabase.filter(q => q.status === 'mastered').length;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statCategories').textContent = total > 0 ? categoriesSet.size : 0;
+            document.getElementById('statStarred').textContent = starred;
+            
+            const rate = total > 0 ? Math.round((mastered / total) * 100) : 0;
+            document.getElementById('statMastery').textContent = `${rate}%`;
+        }
+
+        function renderCategoryPills() {
+            categoryPillContainer.innerHTML = '<span class="text-xs text-slate-400 dark:text-slate-500 font-semibold mr-1">Categories:</span>';
+            
+            const categories = ['all', ...new Set(questionsDatabase.map(q => q.category ? q.category.trim() : 'General'))];
+            
+            categories.forEach(cat => {
+                const isSelected = filteredCategory === cat;
+                const pill = document.createElement('button');
+                pill.className = `px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                    isSelected 
+                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm shadow-emerald-500/20' 
+                    : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                }`;
+                pill.textContent = cat === 'all' ? 'All Deck' : cat;
+                
+                pill.addEventListener('click', () => {
+                    filteredCategory = cat;
+                    renderCategoryPills();
+                    renderQuestions();
+                });
+                
+                categoryPillContainer.appendChild(pill);
+            });
+        }
+
+        function renderQuestions() {
+            let processedList = [...questionsDatabase];
+            const searchQuery = searchInput.value.toLowerCase().trim();
+
+            // Search filter logic
+            if (searchQuery) {
+                processedList = processedList.filter(item => 
+                    item.question.toLowerCase().includes(searchQuery) || 
+                    item.answer.toLowerCase().includes(searchQuery) ||
+                    (item.category && item.category.toLowerCase().includes(searchQuery))
+                );
+            }
+
+            // Category filter logic
+            if (filteredCategory !== 'all') {
+                processedList = processedList.filter(item => 
+                    (item.category || 'General').trim() === filteredCategory.trim()
+                );
+            }
+
+            // Sorter toggle logic
+            const sortBy = sortSelector.value;
+            processedList.sort((a, b) => {
+                if (sortBy === 'sno-asc') {
+                    return (parseInt(a.sno) || 0) - (parseInt(b.sno) || 0);
+                } else if (sortBy === 'sno-desc') {
+                    return (parseInt(b.sno) || 0) - (parseInt(a.sno) || 0);
+                } else if (sortBy === 'alpha') {
+                    return a.question.localeCompare(b.question);
+                }
+                return 0;
+            });
+
+            // Clean previous cards container
+            qaContainer.innerHTML = '';
+
+            if (processedList.length === 0) {
+                qaContainer.innerHTML = `
+                    <div class="text-center py-12 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <div class="text-slate-300 dark:text-slate-600 mb-3"><i class="fa-regular fa-folder-open text-4xl"></i></div>
+                        <h4 class="font-bold text-slate-700 dark:text-slate-300">No Cards Found</h4>
+                        <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Try resetting filters, matching search text, or creating custom flashcards using the lateral side form!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            processedList.forEach((item, index) => {
+                const databaseIndex = questionsDatabase.findIndex(q => q === item);
+                const qaItem = document.createElement('div');
+                qaItem.className = 'bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-200 group';
+                qaItem.setAttribute('data-id', databaseIndex);
+
+                // Determine active status tag CSS colors
+                let statusBadge = '<span class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-1.5 py-0.5 rounded font-medium">Unstudied</span>';
+                if (item.status === 'mastered') {
+                    statusBadge = '<span class="text-[10px] bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">Mastered</span>';
+                } else if (item.status === 'needs-practice') {
+                    statusBadge = '<span class="text-[10px] bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">Needs Review</span>';
+                }
+
+                const cardHeader = document.createElement('div');
+                cardHeader.className = 'p-5 cursor-pointer flex items-center justify-between gap-4 select-none hover:bg-slate-50/50 dark:hover:bg-slate-750/30 transition-colors';
+                
+                cardHeader.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-mono font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-400 dark:text-slate-300">#${item.sno}</span>
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">${escapeHtml(item.category || 'General')}</span>
+                                ${statusBadge}
+                            </div>
+                            <h3 class="font-bold text-slate-800 dark:text-slate-200 leading-snug group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">${escapeHtml(item.question)}</h3>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <!-- Star trigger -->
+                        <button class="star-btn p-2 text-slate-300 hover:text-amber-400 dark:text-slate-600 dark:hover:text-amber-500 transition-colors" title="Bookmark card">
+                            <i class="${item.starred ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'} text-base"></i>
+                        </button>
+                        <!-- Expansion dynamic icons -->
+                        <span class="icon-indicator p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg text-slate-400 group-hover:text-emerald-500 transition-colors">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                        </span>
+                    </div>
+                `;
+
+                const answerPanel = document.createElement('div');
+                answerPanel.className = 'max-h-0 overflow-hidden transition-all duration-300 ease-out bg-slate-50/50 dark:bg-slate-850/50 border-t border-transparent';
+                answerPanel.innerHTML = `
+                    <div class="p-5 text-sm leading-relaxed text-slate-600 dark:text-slate-300 space-y-4">
+                        <p>${escapeHtml(item.answer).replace(/\n/g, '<br>')}</p>
+                        
+                        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <button class="edit-btn text-xs text-slate-500 hover:text-emerald-500 font-medium py-1 px-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Card
+                            </button>
+                            <button class="delete-btn text-xs text-rose-500 hover:text-rose-600 font-medium py-1 px-2 rounded hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors">
+                                <i class="fa-solid fa-trash-can mr-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Header toggling event listener
+                cardHeader.addEventListener('click', (e) => {
+                    // Exclude specific click tags (star trigger button clicks)
+                    if (e.target.closest('.star-btn')) return;
+                    
+                    const isOpen = qaItem.classList.contains('expanded');
+                    if (isOpen) {
+                        qaItem.classList.remove('expanded');
+                        answerPanel.style.maxHeight = '0';
+                        answerPanel.style.borderTopColor = 'transparent';
+                        cardHeader.querySelector('.icon-indicator i').className = 'fa-solid fa-plus text-xs';
+                    } else {
+                        qaItem.classList.add('expanded');
+                        answerPanel.style.maxHeight = `${answerPanel.scrollHeight}px`;
+                        answerPanel.style.borderTopColor = 'rgba(224, 224, 224, 0.1)';
+                        cardHeader.querySelector('.icon-indicator i').className = 'fa-solid fa-minus text-xs';
+                    }
+                });
+
+                // Attach individual quick delete/edit/star trigger listener bindings
+                cardHeader.querySelector('.star-btn').addEventListener('click', () => {
+                    item.starred = !item.starred;
+                    saveToLocalStorage();
+                    renderQuestions();
+                    updateDashboardStats();
+                    showToast(item.starred ? "Added bookmark!" : "Removed bookmark.", "info");
+                });
+
+                answerPanel.querySelector('.delete-btn').addEventListener('click', async () => {
+                    const confirm = await confirmAction(
+                        "Delete Flashcard",
+                        `Are you absolutely sure you want to permanently discard Card S.No #${item.sno}?`
+                    );
+                    if (confirm) {
+                        questionsDatabase.splice(databaseIndex, 1);
+                        saveToLocalStorage();
+                        renderQuestions();
+                        updateDashboardStats();
+                        renderCategoryPills();
+                        showToast(`Card #${item.sno} successfully deleted.`, "info");
+                    }
+                });
+
+                answerPanel.querySelector('.edit-btn').addEventListener('click', () => {
+                    openEditModal(databaseIndex);
+                });
+
+                qaItem.appendChild(cardHeader);
+                qaItem.appendChild(answerPanel);
+                qaContainer.appendChild(qaItem);
+            });
+        }
+
+        function openEditModal(index) {
+            const item = questionsDatabase[index];
+            editCardIndex.value = index;
+            editSno.value = item.sno;
+            editCategory.value = item.category || 'General';
+            editQuestion.value = item.question;
+            editAnswer.value = item.answer;
+            
+            editCardModal.classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            editCardModal.classList.add('hidden');
+        }
+
+        editModalSave.addEventListener('click', () => {
+            const index = parseInt(editCardIndex.value);
+            const sno = editSno.value.trim();
+            const category = editCategory.value.trim() || 'General';
+            const question = editQuestion.value.trim();
+            const answer = editAnswer.value.trim();
+
+            if (!question || !answer) {
+                showToast("Please make sure question & answer fields are filled.", "error");
+                return;
+            }
+
+            questionsDatabase[index] = {
+                ...questionsDatabase[index],
+                sno: sno || (index + 1),
+                category,
+                question,
+                answer
+            };
+
+            saveToLocalStorage();
+            renderQuestions();
+            renderCategoryPills();
+            updateDashboardStats();
+            closeEditModal();
+            showToast("Successfully updated card parameters!");
+        });
+
+        editModalCancel.addEventListener('click', closeEditModal);
+        closeEditModalBtn.addEventListener('click', closeEditModal);
+
+        addManualBtn.addEventListener('click', () => {
+            const question = manualQuestionInput.value.trim();
+            const answer = manualAnswerInput.value.trim();
+            const category = manualCategoryInput.value.trim() || 'General';
+            let sno = manualSnoInput.value.trim();
+
+            if (!question || !answer) {
+                showToast("Oops! Fill both the front and back parameters.", "error");
+                return;
+            }
+
+            if (!sno) {
+                sno = getNextSerialNumber();
+            }
+
+            // Push into current storage state
+            questionsDatabase.push({
+                sno,
+                question,
+                answer,
+                category,
+                starred: false,
+                status: 'new'
+            });
+
+            saveToLocalStorage();
+            renderQuestions();
+            renderCategoryPills();
+            updateDashboardStats();
+
+            // Reset inputs fields
+            manualQuestionInput.value = '';
+            manualAnswerInput.value = '';
+            manualCategoryInput.value = '';
+            manualSnoInput.value = '';
+            
+            showToast(`Perfect! Serial Card #${sno} added.`);
+        });
+
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                if (!line.trim()) return; // skip empty line segments
+                
+                // Enhanced CSV Split parser parsing quoted parameters safely
+                const parts = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        parts.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                parts.push(current.trim());
+
+                let sno = parts[0]?.replace(/^"|"$/g, '').trim();
+                let question = parts[1]?.replace(/^"|"$/g, '').trim();
+                let answer = parts[2]?.replace(/^"|"$/g, '').trim();
+                let category = parts[3]?.replace(/^"|"$/g, '').trim() || 'General';
+
+                if (!sno && question) {
+                    sno = getNextSerialNumber() + addedCount;
+                }
+
+                if (question && answer) {
+                    questionsDatabase.push({
+                        sno: sno || getNextSerialNumber(),
+                        question,
+                        answer,
+                        category,
+                        starred: false,
+                        status: 'new'
+                    });
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveToLocalStorage();
+                renderQuestions();
+                renderCategoryPills();
+                updateDashboardStats();
+                showToast(`Success! Bulk Imported ${addedCount} flashcards.`);
+            } else {
+                showToast("Could not find matching CSV parameters.", "error");
+            }
+        }
+
+        importCsvBtn.addEventListener('click', () => {
+            const content = csvDumpInput.value;
+            if (!content.trim()) {
+                showToast("Please paste CSV data into the text box.", "error");
+                return;
+            }
+            parseCSV(content);
+            csvDumpInput.value = ''; // clean input text area after upload
+        });
+
+        function exportToCSV() {
+            if (questionsDatabase.length === 0) {
+                showToast("No cards available to export.", "error");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "SNo,Question,Answer,Category\r\n";
+
+            questionsDatabase.forEach(item => {
+                // Escape inner quotation marks for valid CSV layouts
+                const q = `"${item.question.replace(/"/g, '""')}"`;
+                const a = `"${item.answer.replace(/"/g, '""')}"`;
+                const cat = `"${(item.category || 'General').replace(/"/g, '""')}"`;
+                csvContent += `${item.sno},${q},${a},${cat}\r\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `EduDeck_study_board_backup.csv`);
+            document.body.appendChild(link); // Required for FF
+            link.click();
+            document.body.removeChild(link);
+            showToast("Downloaded CSV Study Board Backup!");
+        }
+
+        exportCsvBtn.addEventListener('click', exportToCSV);
+
+        function launchQuizSession() {
+            // Establish target slide list for study
+            if (filteredCategory === 'all') {
+                quizSessionList = [...questionsDatabase];
+            } else {
+                quizSessionList = questionsDatabase.filter(q => (q.category || 'General').trim() === filteredCategory.trim());
+            }
+
+            if (quizSessionList.length === 0) {
+                showToast("No active flashcards to launch study session.", "error");
+                return;
+            }
+
+            currentQuizIndex = 0;
+            flashcardModal.classList.remove('hidden');
+            loadQuizCard(currentQuizIndex);
+            updateQuizSessionProgress();
+        }
+
+        function loadQuizCard(index) {
+            if (index < 0 || index >= quizSessionList.length) return;
+            const item = quizSessionList[index];
+
+            // Reset dynamic flipping state to Front default
+            quizCardInner.classList.remove('card-flipped');
+
+            // Set content parameters
+            quizCardQuestion.textContent = item.question;
+            quizCardAnswer.innerHTML = escapeHtml(item.answer).replace(/\n/g, '<br>');
+            
+            quizCardCategoryFront.textContent = item.category || 'General';
+            quizCardCategoryBack.textContent = item.category || 'General';
+            
+            quizCardSnoFront.textContent = `#${item.sno}`;
+            quizCardSnoBack.textContent = `#${item.sno}`;
+
+            // Set modal indicators
+            quizCounter.textContent = `${index + 1} / ${quizSessionList.length}`;
+        }
+
+        function updateQuizSessionProgress() {
+            const mastered = quizSessionList.filter(q => q.status === 'mastered').length;
+            const needsWork = quizSessionList.filter(q => q.status === 'needs-practice').length;
+            
+            sessionMasteredCount.textContent = mastered;
+            sessionNeedsWorkCount.textContent = needsWork;
+        }
+
+        // Toggle quiz card flips
+        quizCardTrigger.addEventListener('click', () => {
+            quizCardInner.classList.toggle('card-flipped');
+        });
+
+        // Click Study Success "Got It"
+        gotItBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentItem = quizSessionList[currentQuizIndex];
+            const originalIndex = questionsDatabase.findIndex(q => q === currentItem);
+            
+            if (originalIndex !== -1) {
+                questionsDatabase[originalIndex].status = 'mastered';
+                saveToLocalStorage();
+            }
+
+            showToast("Great job! Marked as Mastered.", "success");
+            updateQuizSessionProgress();
+            updateDashboardStats();
+            
+            // Advance slide
+            setTimeout(() => {
+                if (currentQuizIndex < quizSessionList.length - 1) {
+                    currentQuizIndex++;
+                    loadQuizCard(currentQuizIndex);
+                } else {
+                    showToast("Congratulations! You completed all cards in this view.");
+                    flashcardModal.classList.add('hidden');
+                    renderQuestions();
+                }
+            }, 300);
+        });
+
+        // Click Study Fail "Needs Practice"
+        needsPracticeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentItem = quizSessionList[currentQuizIndex];
+            const originalIndex = questionsDatabase.findIndex(q => q === currentItem);
+            
+            if (originalIndex !== -1) {
+                questionsDatabase[originalIndex].status = 'needs-practice';
+                saveToLocalStorage();
+            }
+
+            showToast("Added to practice list.", "info");
+            updateQuizSessionProgress();
+            updateDashboardStats();
+
+            // Advance slide
+            setTimeout(() => {
+                if (currentQuizIndex < quizSessionList.length - 1) {
+                    currentQuizIndex++;
+                    loadQuizCard(currentQuizIndex);
+                } else {
+                    showToast("Study session complete! Focus on review items.");
+                    flashcardModal.classList.add('hidden');
+                    renderQuestions();
+                }
+            }, 300);
+        });
+
+        // Next and Prev sliding controls
+        prevCardBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentQuizIndex > 0) {
+                currentQuizIndex--;
+                loadQuizCard(currentQuizIndex);
+            }
+        });
+
+        nextCardBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentQuizIndex < quizSessionList.length - 1) {
+                currentQuizIndex++;
+                loadQuizCard(currentQuizIndex);
+            }
+        });
+
+        // Keyboard slide shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (flashcardModal.classList.contains('hidden')) return;
+
+            if (e.key === 'ArrowRight') {
+                nextCardBtn.click();
+            } else if (e.key === 'ArrowLeft') {
+                prevCardBtn.click();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                quizCardTrigger.click();
+            } else if (e.key === 'y') {
+                gotItBtn.click();
+            } else if (e.key === 'n') {
+                needsPracticeBtn.click();
+            }
+        });
+
+        // Close Study Modal
+        closeQuizBtn.addEventListener('click', () => {
+            flashcardModal.classList.add('hidden');
+            renderQuestions(); // Re-render main deck to show updated status badges
+        });
+
+        // Trigger launcher study session
+        document.getElementById('startQuizBtn').addEventListener('click', launchQuizSession);
+
+        clearAllBtn.addEventListener('click', async () => {
+            const confirm = await confirmAction(
+                "Reset Study Board?",
+                "Are you absolutely sure you want to delete ALL cards inside your current local database workspace?"
+            );
+            if (confirm) {
+                questionsDatabase = [];
+                saveToLocalStorage();
+                renderQuestions();
+                renderCategoryPills();
+                updateDashboardStats();
+                showToast("Cleared active deck workspace.", "info");
+            }
+        });
+
+        loadSamplesBtn.addEventListener('click', async () => {
+            const confirm = await confirmAction(
+                "Load Sample Boards?",
+                "This will merge the default HTML/CSS/JS training deck directly into your current board list."
+            );
+            if (confirm) {
+                questionsDatabase = [...questionsDatabase, ...JSON.parse(JSON.stringify(sampleQuestions))];
+                saveToLocalStorage();
+                renderQuestions();
+                renderCategoryPills();
+                updateDashboardStats();
+                showToast("Preloaded 5 smart study boards!");
+            }
+        });
+
+        function saveToLocalStorage() {
+            localStorage.setItem('edudeck_database', JSON.stringify(questionsDatabase));
+        }
+
+        function loadFromLocalStorage() {
+            const data = localStorage.getItem('edudeck_database');
+            if (data) {
+                try {
+                    questionsDatabase = JSON.parse(data);
+                } catch(e) {
+                    questionsDatabase = [...sampleQuestions];
+                }
+            } else {
+                questionsDatabase = [...sampleQuestions];
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Live typing filtering
+        searchInput.addEventListener('input', renderQuestions);
+        sortSelector.addEventListener('change', renderQuestions);
+
+        window.onload = function() {
+            initTheme();
+            loadFromLocalStorage();
+            renderCategoryPills();
+            renderQuestions();
+            updateDashboardStats();
+        }
+    </script>
+</body>
+</html>
