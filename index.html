@@ -445,254 +445,246 @@
         let customModalResolve = null;
 
         // Sample initial databases to prevent empty states
-        const sampleQuestions = [
+    const sampleQuestions = [
   {
     sno: "1",
-    question: "What will happen if we add an element with key which is already present in a Map?",
-    answer: "The map overwrites the existing value associated with that key, updates it in place, and returns the previous old value.",
-    category: "Java Collections",
+    question: "Why hashset does not allow multiple null values?",
+    answer: "It is backed internally by a HashMap where your elements act as keys. Since map keys must be unique, any subsequent null simply overwrites the first one and is rejected.",
+    category: "Core Java",
     starred: false,
     status: "new"
   },
   {
     sno: "2",
-    question: "Why hashset does not allow multiple null values?",
-    answer: "HashSet is backed internally by a HashMap where the elements act as keys. Since HashMap keys must be unique, any subsequent null simply overwrites the first one and is rejected.",
-    category: "Java Collections",
+    question: "Weak reference, Soft reference & Phantom reference?",
+    answer: "Soft references are collected only when the JVM strictly runs out of memory. Weak references are collected eagerly during the very next GC cycle. Phantom references are held in a ReferenceQueue post-finalization for flexible resource cleanup.",
+    category: "Core Java",
     starred: false,
     status: "new"
   },
   {
     sno: "3",
-    question: "Weak reference, Soft reference & Phantom reference?",
-    answer: "Soft: Collected only when the JVM strictly runs out of memory (good for caches). Weak: Collected eagerly during the very next GC cycle regardless of memory. Phantom: Held in a ReferenceQueue post-finalization for flexible, custom resource cleanup.",
-    category: "Java Memory Management",
+    question: "How to make a list threadsafe?",
+    answer: "Use CopyOnWriteArrayList for high-read/low-write scenarios, Collections.synchronizedList() as a mutex-locked wrapper around a standard list, or the legacy synchronized Vector class.",
+    category: "Core Java",
     starred: false,
-    status: "new"
+    status: "needs-practice"
   },
   {
     sno: "4",
-    question: "How to make a list threadsafe?",
-    answer: "Use CopyOnWriteArrayList (optimized for high-read/low-write), Collections.synchronizedList() (mutex-locked wrapper around a standard list), or Vector (legacy synchronized class).",
-    category: "Java Concurrency",
+    question: "How to create a custom endpoint for actuator?",
+    answer: "Annotate a class with @Component and @Endpoint(id = \"id\"). Define operations using @ReadOperation (GET) or @WriteOperation (POST), and expose it via management.endpoints.web.exposure.include in your properties.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "5",
-    question: "How to create a custom endpoint for actuator?",
-    answer: "Annotate your class with @Component and @Endpoint(id = \"customCheck\"). Define operations using @ReadOperation (GET) or @WriteOperation (POST), and expose it in application.properties using management.endpoints.web.exposure.include=customCheck.",
-    category: "Spring Boot Actuator",
-    starred: false,
+    question: "How does springboot application words under the hood? Explain @Springboot application. Also explain the annotation used in it?",
+    answer: "Under the hood, SpringApplication.run() bootstraps the environment and auto-wires beans. @SpringBootApplication is a meta-annotation combining @SpringBootConfiguration (bean source), @EnableAutoConfiguration (classpath-driven config), and @ComponentScan (finds components).",
+    category: "Springboot",
+    starred: true,
     status: "new"
   },
   {
     sno: "6",
-    question: "How does springboot application words under the hood? Explain @Springboot application. Also explain the annotation used in it?",
-    answer: "Under the hood, SpringApplication.run() initializes the Application Context, detects classpath dependencies, and auto-wires beans. @SpringBootApplication is a meta-annotation combining @SpringBootConfiguration (bean source), @EnableAutoConfiguration (class-path auto-wiring), and @ComponentScan (component scanning).",
-    category: "Spring Boot Core",
+    question: "What is JPA ? How does it help?",
+    answer: "Java Persistence API is a specification for Object-Relational Mapping. It helps by removing boilerplate JDBC code, mapping Java objects directly to tables, and offering database dialect independence.",
+    category: "Springboot",
     starred: false,
-    status: "new"
+    status: "mastered"
   },
   {
     sno: "7",
-    question: "What is JPA ? How does it help?",
-    answer: "Java Persistence API (JPA) is a specification for Object-Relational Mapping (ORM). It eliminates boilerplate JDBC code, maps Java objects to relational tables, and ensures database dialect independence.",
-    category: "Spring Data JPA",
-    starred: false,
+    question: "@Qualifier vs @Primary",
+    answer: "@Primary defines a default fallback bean when multiple beans of the same type exist. @Qualifier allows you to explicitly target a specific bean by its exact name at the injection point, overriding @Primary.",
+    category: "Springboot",
+    starred: true,
     status: "new"
   },
   {
     sno: "8",
-    question: "@Qualifier vs @Primary",
-    answer: "@Primary defines a default fallback bean when multiple candidates of the same type exist. @Qualifier provides granular control by allowing you to explicitly specify the exact bean name at the injection point, overriding @Primary.",
-    category: "Spring Dependency Injection",
+    question: "@Async, @Transactional, @Configuration, @Controller, @RestController, @SpringbootApplication, @EnableAutoConfiguration, @Autowired, @ComponentScan, @Component, @Service, @ResponseEnity",
+    answer: "A comprehensive suite of Spring annotations used to manage bean registration, request routing, database transaction boundaries, asynchronous background threads, dependency injection, and automatic configuration.",
+    category: "Springboot",
     starred: false,
-    status: "new"
+    status: "needs-practice"
   },
   {
     sno: "9",
-    question: "@Async, @Transactional, @Configuration, @Controller, @RestController, @SpringbootApplication, @EnableAutoConfiguration, @Autowired, @ComponentScan, @Component, @Service, @ResponseEnity",
-    answer: "These are core Spring annotations categorized into: Bean Registration (@Component, @Service, @Configuration), Web/REST (@Controller, @RestController, ResponseEntity), Dependency Injection (@Autowired), Behavior (@Async, @Transactional), and Bootstrapping (@SpringBootApplication, @EnableAutoConfiguration, @ComponentScan).",
-    category: "Spring Annotations",
-    starred: false,
-    status: "new"
+    question: "Pass by value and pass by reference in java? Which one does Java follows?",
+    answer: "Java is strictly pass-by-value. It passes a copy of the actual value for primitive types, and a copy of the memory address (the reference handle) for object types.",
+    category: "Core Java",
+    starred: true,
+    status: "mastered"
   },
   {
     sno: "10",
-    question: "Pass by value and pass by reference in java? Which one does Java follows?",
-    answer: "Java is strictly pass-by-value. For primitives, it passes a copy of the actual value. For objects, it passes a copy of the memory address (the reference handle). It never passes the actual reference itself.",
-    category: "Java Core",
+    question: "When would you choose a monolith over microservices?",
+    answer: "Choose a monolith for small teams, early-stage MVPs, or simple domains to avoid the premature operational overhead, network latency, and distributed data management complexity of microservices.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "11",
-    question: "When would you choose a monolith over microservices?",
-    answer: "Choose a monolith for small teams, early-stage MVPs, or simple domains where rapid deployment and low operational overhead are critical. It avoids premature distributed system complexity.",
-    category: "System Design",
+    question: "A feature requires strong consistency. Would you use synchronous or asynchronous communication?",
+    answer: "Use synchronous communication (like REST or gRPC) because the calling service actively blocks and waits for a definitive, immediate confirmation of success or failure.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "12",
-    question: "A feature requires strong consistency. Would you use synchronous or asynchronous communication?",
-    answer: "Use synchronous communication (like gRPC or REST) because it allows the calling service to block and wait for a definitive confirmation of success or failure before proceeding.",
-    category: "System Design",
+    question: "One service owns the data. Another service needs it. How would you design the interaction?",
+    answer: "Fetch the data synchronously via REST/gRPC for real-time needs, or stream data changes asynchronously using events so the consuming service can cache the data locally.",
+    category: "Springboot",
     starred: false,
-    status: "new"
+    status: "needs-practice"
   },
   {
     sno: "13",
-    question: "One service owns the data. Another service needs it. How would you design the interaction?",
-    answer: "For real-time needs, have the dependent service fetch it synchronously via REST/gRPC. For decoupled reads, stream changes asynchronously via events so the consumer can maintain its own localized cache.",
-    category: "System Design",
-    starred: false,
+    question: "Your application is growing rapidly. What's the first scalability bottleneck you would look for?",
+    answer: "Look at the database layer first (connection pools, slow queries, or locking) because stateful databases are much harder to scale out horizontally than stateless application instances.",
+    category: "Springboot",
+    starred: true,
     status: "new"
   },
   {
     sno: "14",
-    question: "Your application is growing rapidly. What's the first scalability bottleneck you would look for?",
-    answer: "The database is almost always the first bottleneck—specifically connection pool exhaustion, unindexed slow queries, or CPU spikes, as stateful layers are much harder to scale out than stateless servers.",
-    category: "System Design",
+    question: "When does adding a cache become a bad idea?",
+    answer: "It is a bad idea when your data is highly dynamic and changes constantly (causing massive invalidation overhead) or when your application cannot tolerate any stale data whatsoever.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "15",
-    question: "When does adding a cache become a bad idea?",
-    answer: "It is a bad idea when data is highly dynamic (causing massive invalidation overhead) or when the application cannot tolerate any stale data whatsoever, as the risk of inconsistency outweighs performance.",
-    category: "System Design",
+    question: "Would you optimize a slow query or add more infrastructure first?",
+    answer: "Always optimize the slow query first (indexing, rewriting plans). Adding more hardware is a temporary, highly expensive band-aid that will inevitably fail again at higher scales.",
+    category: "Springboot",
     starred: false,
-    status: "new"
+    status: "mastered"
   },
   {
     sno: "16",
-    question: "Would you optimize a slow query or add more infrastructure first?",
-    answer: "Always optimize the slow query first via indexing or rewriting. Throwing hardware at a bad query is an expensive, temporary band-aid that will inevitably break again at a higher scale.",
-    category: "System Design",
+    question: "A service receives the same event twice. How would you handle it?",
+    answer: "Implement idempotency by saving unique Event or Transaction IDs in a fast store like Redis and checking against it to skip processing if the ID already exists.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "17",
-    question: "A service receives the same event twice. How would you handle it?",
-    answer: "Implement idempotency by saving a unique Event/Transaction ID in a fast store like Redis. Check if the ID exists before processing; if it does, acknowledge the event and skip execution.",
-    category: "System Design",
+    question: "How would you deploy a breaking API change without affecting consumers?",
+    answer: "Use API Versioning by exposing the new contract on a new path (like /v2/) while keeping the old route (/v1/) active and running concurrently until all clients migrate.",
+    category: "Springboot",
     starred: false,
-    status: "new"
+    status: "needs-practice"
   },
   {
     sno: "18",
-    question: "How would you deploy a breaking API change without affecting consumers?",
-    answer: "Implement API Versioning by exposing the new contract on a new path (e.g., /v2/api) while keeping the old path (/v1/api) active until all consumers have safely migrated.",
-    category: "System Design",
+    question: "What would make you reject a technically correct solution?",
+    answer: "I would reject it if it introduces excessive accidental complexity, suffers from terrible code readability, or is too difficult for the team to maintain and debug long-term.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "19",
-    question: "What would make you reject a technically correct solution?",
-    answer: "I would reject it if it introduces excessive accidental complexity, suffers from terrible readability, or violates the team's long-term maintenance and debugging capabilities.",
-    category: "Software Engineering",
-    starred: false,
-    status: "new"
+    question: "How do you decide between SQL and NoSQL?",
+    answer: "Choose SQL for structured, highly relational data requiring complex ACID transactions. Choose NoSQL for horizontal scaling, dynamic schemas, and low-latency key-value lookups.",
+    category: "Springboot",
+    starred: true,
+    status: "mastered"
   },
   {
     sno: "20",
-    question: "How do you decide between SQL and NoSQL?",
-    answer: "Choose SQL for highly relational data, strict schemas, and complex ACID transaction needs. Choose NoSQL for horizontal scalability, unstructured data, and rapid key-value lookups.",
-    category: "System Design",
+    question: "A deployment improves performance but increases complexity. Would you proceed?",
+    answer: "Only proceed if the performance boost directly solves a critical business bottleneck or satisfies a strict, mandatory SLA. Otherwise, avoid the maintenance overhead.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "21",
-    question: "A deployment improves performance but increases complexity. Would you proceed?",
-    answer: "Only proceed if the performance boost directly solves a critical business bottleneck or satisfies a strict, mandatory SLA. Otherwise, avoid burdening the team with maintenance overhead.",
-    category: "Software Engineering",
+    question: "When should a microservice have its own database?",
+    answer: "Always. Using the Database-per-Service pattern is essential to preserve loose coupling, domain boundaries, and independent scaling, avoiding a distributed monolith.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "22",
-    question: "When should a microservice have its own database?",
-    answer: "Always. Following the Database-per-Service pattern is essential to ensure loose coupling and domain autonomy. Sharing databases bypasses boundaries and creates a distributed monolith.",
-    category: "System Design",
+    question: "What metrics would you monitor before scaling a service?",
+    answer: "Monitor CPU utilization, memory consumption, network I/O, HTTP response latency, error rates, and JVM-specific metrics like garbage collection pause times.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "23",
-    question: "What metrics would you monitor before scaling a service?",
-    answer: "Monitor CPU utilization, memory usage, network I/O, HTTP response latency/error rates, and JVM metrics like garbage collection pause times and thread pool saturation.",
-    category: "System Design",
+    question: "A bug affects only 1% of users. Would you stop the release?",
+    answer: "Yes if it impacts critical core flows (like payments or data corruption) or if you lack a canary release setup to isolate it; otherwise, release and hotfix immediately.",
+    category: "Springboot",
     starred: false,
-    status: "new"
+    status: "needs-practice"
   },
   {
     sno: "24",
-    question: "A bug affects only 1% of users. Would you stop the release?",
-    answer: "Yes, if the bug affects critical flows like financial payments or causes data corruption, or if you lack a canary/feature-flag setup to isolate it; otherwise, roll out and hotfix in the background.",
-    category: "Software Engineering",
+    question: "When is eventual consistency acceptable?",
+    answer: "It is acceptable when high availability and fast system response times are more critical than real-time correctness (e.g., social media likes, email notifications).",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "25",
-    question: "When is eventual consistency acceptable?",
-    answer: "When high availability and system responsiveness are more critical than real-time correctness (e.g., social media likes, email notifications, and recommendation engines).",
-    category: "System Design",
+    question: "How would you decide whether a process should be synchronous or event-driven?",
+    answer: "Use synchronous if the caller requires an immediate response to proceed (e.g., login). Use event-driven for long-running background tasks where decoupling increases resilience.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "26",
-    question: "How would you decide whether a process should be synchronous or event-driven?",
-    answer: "Choose synchronous if the calling system needs an immediate response to proceed (e.g., user login). Choose event-driven for non-blocking, asynchronous background workflows.",
-    category: "System Design",
-    starred: false,
+    question: "What's more dangerous: technical debt or premature optimization?",
+    answer: "Premature optimization is more dangerous because it permanently locks you into highly complex, specific architectures for problems you may never actually face.",
+    category: "Core Java",
+    starred: true,
     status: "new"
   },
   {
     sno: "27",
-    question: "What's more dangerous: technical debt or premature optimization?",
-    answer: "Premature optimization is more dangerous because it locks you into complex, highly specific architectures for problems you may never face. Technical debt is a manageable trade-off for speed.",
-    category: "Software Engineering",
+    question: "How would you identify a service that won't scale in the future?",
+    answer: "Look for tight coupling to a single relational database, heavy reliance on distributed locking/state, blocking synchronous call chains, or non-stateless architectures.",
+    category: "Springboot",
     starred: false,
-    status: "new"
+    status: "needs-practice"
   },
   {
     sno: "28",
-    question: "How would you identify a service that won't scale in the future?",
-    answer: "Look for tight coupling to a single relational database instance, heavy use of distributed state or locking, blocking synchronous chains, or long-running CPU-bound tasks.",
-    category: "System Design",
+    question: "At what point do microservices become more expensive than beneficial?",
+    answer: "When the engineering team spends more time managing distributed systems overhead (tracing, pipelines, network issues) than delivering actual business value.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "29",
-    question: "At what point do microservices become more expensive than beneficial?",
-    answer: "When the engineering team spends more time managing distributed system complexities (tracing, network latency, data synchronization) than delivering actual business value.",
-    category: "System Design",
+    question: "What trade-off would you accept for faster delivery?",
+    answer: "I would accept managed technical debt like skipping non-critical test coverage, simple UI designs, or deferred refactoring. I would never trade off security or data correctness.",
+    category: "Springboot",
     starred: false,
     status: "new"
   },
   {
     sno: "30",
-    question: "What trade-off would you accept for faster delivery?",
-    answer: "I would accept managed technical debt like skipping non-critical unit test coverage, basic UI styling, or deferred refactoring. I would never trade off security, data correctness, or system observability.",
-    category: "Software Engineering",
-    starred: false,
-    status: "new"
-  },
-  {
-    sno: "31",
     question: "What is Difference between Interface and Abstract Class? Why and When to use what?",
-    answer: "Interface: A contract defining a capability (\"Can-Do\" or \"Is-Like\") supporting multiple inheritance. Abstract Class: A base blueprint establishing a structural identity (\"Is-A\") that can hold instance state and share code among closely related classes.",
-    category: "Java OOPs",
-    starred: false,
-    status: "new"
+    answer: "An Interface defines a peripheral capability contract (Can-Do) and supports multiple inheritance. An Abstract Class defines a base identity blueprint (Is-A) and can hold state.",
+    category: "Core Java",
+    starred: true,
+    status: "mastered"
   }
 ];
 
