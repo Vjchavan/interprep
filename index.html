@@ -446,12 +446,255 @@
 
         // Sample initial databases to prevent empty states
         const sampleQuestions = [
-            { sno: "1", question: "What does HTML stand for?", answer: "HyperText Markup Language. It provides the core skeleton structure of any standard website layout structure.", category: "HTML", starred: false, status: "new" },
-            { sno: "2", question: "What is Cascading Style Sheets (CSS)?", answer: "CSS describes how HTML elements are to be displayed on screen, paper, or in other media.", category: "CSS", starred: true, status: "new" },
-            { sno: "3", question: "Explain JavaScript closures briefly", answer: "A closure is the combination of a function bundled together with references to its surrounding state (the lexical environment). closures allow an inner function to access scope from an outer function.", category: "JavaScript", starred: false, status: "needs-practice" },
-            { sno: "4", question: "What is the viewport meta tag for?", answer: "It gives the browser instructions on how to control the page's dimensions and scaling on varying viewports (highly critical for mobile layouts).", category: "HTML", starred: false, status: "mastered" },
-            { sno: "5", question: "Difference between '==' and '===' in JS?", answer: "== checks values for equality after performing type conversion. === checks values and types without coercion.", category: "JavaScript", starred: true, status: "mastered" }
-        ];
+  {
+    sno: "1",
+    question: "What will happen if we add an element with key which is already present in a Map?",
+    answer: "The map overwrites the existing value associated with that key, updates it in place, and returns the previous old value.",
+    category: "Java Collections",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "2",
+    question: "Why hashset does not allow multiple null values?",
+    answer: "HashSet is backed internally by a HashMap where the elements act as keys. Since HashMap keys must be unique, any subsequent null simply overwrites the first one and is rejected.",
+    category: "Java Collections",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "3",
+    question: "Weak reference, Soft reference & Phantom reference?",
+    answer: "Soft: Collected only when the JVM strictly runs out of memory (good for caches). Weak: Collected eagerly during the very next GC cycle regardless of memory. Phantom: Held in a ReferenceQueue post-finalization for flexible, custom resource cleanup.",
+    category: "Java Memory Management",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "4",
+    question: "How to make a list threadsafe?",
+    answer: "Use CopyOnWriteArrayList (optimized for high-read/low-write), Collections.synchronizedList() (mutex-locked wrapper around a standard list), or Vector (legacy synchronized class).",
+    category: "Java Concurrency",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "5",
+    question: "How to create a custom endpoint for actuator?",
+    answer: "Annotate your class with @Component and @Endpoint(id = \"customCheck\"). Define operations using @ReadOperation (GET) or @WriteOperation (POST), and expose it in application.properties using management.endpoints.web.exposure.include=customCheck.",
+    category: "Spring Boot Actuator",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "6",
+    question: "How does springboot application words under the hood? Explain @Springboot application. Also explain the annotation used in it?",
+    answer: "Under the hood, SpringApplication.run() initializes the Application Context, detects classpath dependencies, and auto-wires beans. @SpringBootApplication is a meta-annotation combining @SpringBootConfiguration (bean source), @EnableAutoConfiguration (class-path auto-wiring), and @ComponentScan (component scanning).",
+    category: "Spring Boot Core",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "7",
+    question: "What is JPA ? How does it help?",
+    answer: "Java Persistence API (JPA) is a specification for Object-Relational Mapping (ORM). It eliminates boilerplate JDBC code, maps Java objects to relational tables, and ensures database dialect independence.",
+    category: "Spring Data JPA",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "8",
+    question: "@Qualifier vs @Primary",
+    answer: "@Primary defines a default fallback bean when multiple candidates of the same type exist. @Qualifier provides granular control by allowing you to explicitly specify the exact bean name at the injection point, overriding @Primary.",
+    category: "Spring Dependency Injection",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "9",
+    question: "@Async, @Transactional, @Configuration, @Controller, @RestController, @SpringbootApplication, @EnableAutoConfiguration, @Autowired, @ComponentScan, @Component, @Service, @ResponseEnity",
+    answer: "These are core Spring annotations categorized into: Bean Registration (@Component, @Service, @Configuration), Web/REST (@Controller, @RestController, ResponseEntity), Dependency Injection (@Autowired), Behavior (@Async, @Transactional), and Bootstrapping (@SpringBootApplication, @EnableAutoConfiguration, @ComponentScan).",
+    category: "Spring Annotations",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "10",
+    question: "Pass by value and pass by reference in java? Which one does Java follows?",
+    answer: "Java is strictly pass-by-value. For primitives, it passes a copy of the actual value. For objects, it passes a copy of the memory address (the reference handle). It never passes the actual reference itself.",
+    category: "Java Core",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "11",
+    question: "When would you choose a monolith over microservices?",
+    answer: "Choose a monolith for small teams, early-stage MVPs, or simple domains where rapid deployment and low operational overhead are critical. It avoids premature distributed system complexity.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "12",
+    question: "A feature requires strong consistency. Would you use synchronous or asynchronous communication?",
+    answer: "Use synchronous communication (like gRPC or REST) because it allows the calling service to block and wait for a definitive confirmation of success or failure before proceeding.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "13",
+    question: "One service owns the data. Another service needs it. How would you design the interaction?",
+    answer: "For real-time needs, have the dependent service fetch it synchronously via REST/gRPC. For decoupled reads, stream changes asynchronously via events so the consumer can maintain its own localized cache.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "14",
+    question: "Your application is growing rapidly. What's the first scalability bottleneck you would look for?",
+    answer: "The database is almost always the first bottleneck—specifically connection pool exhaustion, unindexed slow queries, or CPU spikes, as stateful layers are much harder to scale out than stateless servers.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "15",
+    question: "When does adding a cache become a bad idea?",
+    answer: "It is a bad idea when data is highly dynamic (causing massive invalidation overhead) or when the application cannot tolerate any stale data whatsoever, as the risk of inconsistency outweighs performance.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "16",
+    question: "Would you optimize a slow query or add more infrastructure first?",
+    answer: "Always optimize the slow query first via indexing or rewriting. Throwing hardware at a bad query is an expensive, temporary band-aid that will inevitably break again at a higher scale.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "17",
+    question: "A service receives the same event twice. How would you handle it?",
+    answer: "Implement idempotency by saving a unique Event/Transaction ID in a fast store like Redis. Check if the ID exists before processing; if it does, acknowledge the event and skip execution.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "18",
+    question: "How would you deploy a breaking API change without affecting consumers?",
+    answer: "Implement API Versioning by exposing the new contract on a new path (e.g., /v2/api) while keeping the old path (/v1/api) active until all consumers have safely migrated.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "19",
+    question: "What would make you reject a technically correct solution?",
+    answer: "I would reject it if it introduces excessive accidental complexity, suffers from terrible readability, or violates the team's long-term maintenance and debugging capabilities.",
+    category: "Software Engineering",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "20",
+    question: "How do you decide between SQL and NoSQL?",
+    answer: "Choose SQL for highly relational data, strict schemas, and complex ACID transaction needs. Choose NoSQL for horizontal scalability, unstructured data, and rapid key-value lookups.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "21",
+    question: "A deployment improves performance but increases complexity. Would you proceed?",
+    answer: "Only proceed if the performance boost directly solves a critical business bottleneck or satisfies a strict, mandatory SLA. Otherwise, avoid burdening the team with maintenance overhead.",
+    category: "Software Engineering",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "22",
+    question: "When should a microservice have its own database?",
+    answer: "Always. Following the Database-per-Service pattern is essential to ensure loose coupling and domain autonomy. Sharing databases bypasses boundaries and creates a distributed monolith.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "23",
+    question: "What metrics would you monitor before scaling a service?",
+    answer: "Monitor CPU utilization, memory usage, network I/O, HTTP response latency/error rates, and JVM metrics like garbage collection pause times and thread pool saturation.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "24",
+    question: "A bug affects only 1% of users. Would you stop the release?",
+    answer: "Yes, if the bug affects critical flows like financial payments or causes data corruption, or if you lack a canary/feature-flag setup to isolate it; otherwise, roll out and hotfix in the background.",
+    category: "Software Engineering",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "25",
+    question: "When is eventual consistency acceptable?",
+    answer: "When high availability and system responsiveness are more critical than real-time correctness (e.g., social media likes, email notifications, and recommendation engines).",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "26",
+    question: "How would you decide whether a process should be synchronous or event-driven?",
+    answer: "Choose synchronous if the calling system needs an immediate response to proceed (e.g., user login). Choose event-driven for non-blocking, asynchronous background workflows.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "27",
+    question: "What's more dangerous: technical debt or premature optimization?",
+    answer: "Premature optimization is more dangerous because it locks you into complex, highly specific architectures for problems you may never face. Technical debt is a manageable trade-off for speed.",
+    category: "Software Engineering",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "28",
+    question: "How would you identify a service that won't scale in the future?",
+    answer: "Look for tight coupling to a single relational database instance, heavy use of distributed state or locking, blocking synchronous chains, or long-running CPU-bound tasks.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "29",
+    question: "At what point do microservices become more expensive than beneficial?",
+    answer: "When the engineering team spends more time managing distributed system complexities (tracing, network latency, data synchronization) than delivering actual business value.",
+    category: "System Design",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "30",
+    question: "What trade-off would you accept for faster delivery?",
+    answer: "I would accept managed technical debt like skipping non-critical unit test coverage, basic UI styling, or deferred refactoring. I would never trade off security, data correctness, or system observability.",
+    category: "Software Engineering",
+    starred: false,
+    status: "new"
+  },
+  {
+    sno: "31",
+    question: "What is Difference between Interface and Abstract Class? Why and When to use what?",
+    answer: "Interface: A contract defining a capability (\"Can-Do\" or \"Is-Like\") supporting multiple inheritance. Abstract Class: A base blueprint establishing a structural identity (\"Is-A\") that can hold instance state and share code among closely related classes.",
+    category: "Java OOPs",
+    starred: false,
+    status: "new"
+  }
+];
 
         // DOM elements
         const themeToggleBtn = document.getElementById('themeToggleBtn');
